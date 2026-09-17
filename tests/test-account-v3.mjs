@@ -5,6 +5,7 @@ const env={SAVE_KEY:Buffer.alloc(32,7).toString('base64'),DB:{prepare,async batc
 let cookie='',now=Date.now();Date.now=()=>now;
 async function call(path,data={},ck=cookie){const r=await api(new Request('https://game.test/api/'+path,{method:path.includes('?')?'GET':'POST',headers:{'Content-Type':'application/json',cookie:ck,origin:'https://game.test'},body:path.includes('?')?undefined:JSON.stringify(data)}),env);return {status:r.status,json:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]}}
 const op=(action,fields={},id=crypto.randomUUID())=>call('v3/operation',{id,action,...fields});
+async function compactCall(path,data={}){const response=await api(new Request('https://game.test/api/v3/'+path+'?compact=1',{method:'POST',headers:{'Content-Type':'application/json',cookie,origin:'https://game.test'},body:JSON.stringify(data)}),env);assert.equal(response.status,200);return response.json()}
 let r=await call('v3/session');assert.equal(r.status,200);cookie=r.cookie;const player=r.json.profile.id;assert.equal(r.json.profile.gold,0);assert.equal(r.json.profile.rank,0);assert(!r.json.profile.recovery_hash);
 assert.equal((await call('run/start',{stage:0})).status,410);assert.equal((await op('buy',{category:'research',item:'hp'})).status,400);assert.equal((await op('start',{difficulty:1,stage:0,weapon:'gauss'})).status,400);
 let start=await op('start',{difficulty:0,stage:0});assert.equal(start.status,200);const run=start.json.result.run;assert.equal((await op('start',{difficulty:0,stage:0})).status,409);assert.equal((await op('buy',{category:'research',item:'hp'})).status,409);
@@ -41,3 +42,12 @@ for(const autoCashout of [1,101,1.001,'invalid']){r=await op('rocket',{bet:100,a
 // Authentication/database processing time must not move the arrival-time cashout.
 setRocket(1.5,2,1000);const oldPrepare=env.DB.prepare;let delayed=false;env.DB.prepare=(sql,...args)=>{if(!delayed&&sql.includes('FROM sessions_v3')){delayed=true;now+=10000}return oldPrepare(sql,...args)};r=await op('cashout',{activeId:'auto-test'});env.DB.prepare=oldPrepare;assert(r.json.result.settlement.paid>0);
 console.log('PASS: exact auto target after delayed polling, earlier crash/tie loss, manual early exit, target validation, cashout arrival time excludes auth delay.');
+setRocket(3,2,1000);let sqlCount=0;env.DB.prepare=(...args)=>{sqlCount++;return oldPrepare(...args)};
+let lean=await compactCall('status');assert.equal(sqlCount,1);assert.equal(lean.profile.titlesUnchanged,true);assert(!('titles' in lean.profile));assert(!('crash' in lean.profile.active));assert(!('seed' in lean.profile.active));
+const leanCashout={id:crypto.randomUUID(),action:'cashout',activeId:'auto-test'};
+lean=await compactCall('operation',leanCashout);const leanBalance=lean.profile.gold;
+assert(lean.result.settlement.paid>0);assert.equal((await compactCall('operation',leanCashout)).profile.gold,leanBalance);
+assert.equal((await call('v3/operation',leanCashout)).json.profile.gold,leanBalance);
+assert((await compactCall('operation',{id:crypto.randomUUID(),action:'equipTitle',item:null})).profile.titles);
+env.DB.prepare=oldPrepare;
+console.log('PASS: compact status uses one query, omits hidden outcome, cashout replays across full/compact responses without double credit, title actions always return full eligibility.');

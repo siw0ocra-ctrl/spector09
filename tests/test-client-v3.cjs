@@ -7,3 +7,11 @@ for(let d=0;d<3;d++)for(let stage=0;stage<10;stage++){test(`selected=${stage};be
 test('selected=0;beginLocalRun({id:"chest",difficulty:2,startWeapon:"gauss"});run.chests[0].x=0;run.chests[0].y=0;hurt(run.chests[0],1);run.drops[0].kind="gold";run.t=1;collectDrop(run.drops[0])');assert.equal(test('run.gold'),48);assert.equal(test('save.gold'),0);assert.equal(test('run.goldChests'),1);
 test('run.weapons.gauss=5;for(const p of passives)run.skills[p.id]=5;levelUp()');assert.equal(test('run.choices.join(",")'),'heal,gold');test('choose("gold")');assert.equal(test('run.goldSupplies'),1);
 console.log('PASS: scripts boot, all 8 weapons deal damage, 5/3/1 slots, Extreme auto levels/awakening/passive pool, 30 boss combinations, server-pending loot, max-level supply choices.');
+test(`const originalSave=structuredClone(save);applyProfile({id:'profile',revision:10,gold:500,rank:0,campaigns:[[],[],[]],titles:{owned:['void'],eligible:[],equipped:'void'},titleCheckedAt:123});applyProfile({id:'profile',revision:11,gold:600,rank:0,campaigns:[[],[],[]],titlesUnchanged:true});`);
+assert.equal(test('accountProfile.gold'),600);assert.equal(test('accountProfile.titles.equipped'),'void');
+test(`applyProfile({id:'profile',revision:9,gold:1,rank:0,campaigns:[[],[],[]],titlesUnchanged:true})`);assert.equal(test('accountProfile.gold'),600);
+assert.equal(test(`nearestTarget([{x:1,y:0,id:1,dead:true},{x:2,y:0,id:2},{x:-2,y:0,id:3}],0,0).id`),2);
+test('save=originalSave');
+test(`selected=0;beginLocalRun({id:'hud',difficulty:0,startWeapon:'gauss'});run.t=0;updateHUD();run.gold=42;run.t=.05;updateHUD(false)`);assert(!test(`$('runGold').textContent.includes('42')`));test('updateHUD()');assert(test(`$('runGold').textContent.includes('42')`));
+test(`renderLoadout();run.weapons.gauss=2;renderLoadout()`);assert(test(`$('loadout').innerHTML.includes('무기 2/5')`));
+console.log('PASS: compact wallet preserves titles and revision ordering; nearest target skips dead targets and preserves ties; HUD events bypass throttle and loadout levels refresh.');
