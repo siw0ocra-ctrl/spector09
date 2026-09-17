@@ -8,8 +8,8 @@ const root=path.resolve(process.argv[2]||'.'),require=createRequire(import.meta.
 const {api}=await import(pathToFileURL(path.join(root,'server/api.mjs')));
 const db=new DatabaseSync(':memory:');for(const f of fs.readdirSync(path.join(root,'drizzle')).filter(f=>f.endsWith('.sql')).sort())db.exec(fs.readFileSync(path.join(root,'drizzle',f),'utf8'));
 let queries=0;
-function prepare(sql,args=[]){return {bind(...v){return prepare(sql,v)},first:async()=>{queries++;return db.prepare(sql).get(...args)||null},all:async()=>{queries++;return {results:db.prepare(sql).all(...args)}},run:async()=>{queries++;return db.prepare(sql).run(...args)}}}
-const env={DB:{prepare,async batch(list){db.exec('BEGIN');try{for(const s of list)await s.run();db.exec('COMMIT')}catch(e){db.exec('ROLLBACK');throw e}}}};
+function prepare(sql,args=[]){return {bind(...v){return prepare(sql,v)},first:async()=>{queries++;return db.prepare(sql).get(...args)||null},all:async()=>{queries++;return {results:db.prepare(sql).all(...args)}},run:async()=>{queries++;return (/^SELECT/i.test(sql)?{results:db.prepare(sql).all(...args)}:{results:[],meta:db.prepare(sql).run(...args)})}}}
+const env={DB:{prepare,async batch(list){db.exec('BEGIN');try{const results=[];for(const s of list)results.push(await s.run());db.exec('COMMIT');return results}catch(e){db.exec('ROLLBACK');throw e}}}};
 let cookie='';async function call(endpoint,data){const r=await api(new Request('https://bench.test/api/v3/'+endpoint,{method:data?'POST':'GET',headers:{cookie,origin:'https://bench.test','Content-Type':'application/json'},body:data?JSON.stringify(data):undefined}),env);if(r.headers.get('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];const body=await r.text();if(!r.ok)throw Error(body);return {body,json:JSON.parse(body)}}
 const player=(await call('session',{})).json.profile.id;
 const ins=db.prepare('INSERT INTO rankings_v3 VALUES(?,?,?,?,?,?,?,?,?,?,?)');db.exec('BEGIN');for(let i=0;i<10000;i++)ins.run('r'+i,'p'+Math.floor(i/10),i%3,i%10,'all','Pilot',0,'[]',180000+i,100,1000+i);db.exec('COMMIT');

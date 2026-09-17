@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';import {api,authorizeRealtime,attachRealtime} from '../server/api.mjs';
 const db=new DatabaseSync(':memory:');for(const file of fs.readdirSync('drizzle').filter(x=>x.endsWith('.sql')).sort())db.exec(fs.readFileSync('drizzle/'+file,'utf8'));
-function prepare(sql,args=[]){return {bind(...values){return prepare(sql,values)},first:async()=>db.prepare(sql).get(...args)||null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>db.prepare(sql).run(...args)}}
+function prepare(sql,args=[]){return {bind(...values){return prepare(sql,values)},first:async()=>db.prepare(sql).get(...args)||null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>(/^SELECT/i.test(sql)?{results:db.prepare(sql).all(...args)}:{results:[],meta:db.prepare(sql).run(...args)})}}
 const env={SAVE_KEY:Buffer.alloc(32,7).toString('base64'),DB:{prepare,async batch(statements){db.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());db.exec('COMMIT');return result}catch(e){db.exec('ROLLBACK');throw e}}}};
 let cookie='',now=Date.now();Date.now=()=>now;
 async function call(path,data={},ck=cookie){const r=await api(new Request('https://game.test/api/'+path,{method:path.includes('?')?'GET':'POST',headers:{'Content-Type':'application/json',cookie:ck,origin:'https://game.test'},body:path.includes('?')?undefined:JSON.stringify(data)}),env);return {status:r.status,json:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]}}

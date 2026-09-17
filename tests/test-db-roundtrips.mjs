@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';import {pathToFileURL} from 'node:url';import path from 'node:path';
+const {api}=await import(pathToFileURL(path.resolve(process.argv[2]||'server/api.mjs')));
+const db=new DatabaseSync(':memory:');for(const f of fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())db.exec(fs.readFileSync('drizzle/'+f,'utf8'));
+let trips=0,statements=0;function prepare(sql,args=[]){const execute=()=>{statements++;const stmt=db.prepare(sql);return /^SELECT/i.test(sql)?{results:stmt.all(...args)}:{results:[],meta:stmt.run(...args)}};return {bind(...v){return prepare(sql,v)},execute,first:async()=>{trips++;return execute().results[0]||null},all:async()=>{trips++;return execute()},run:async()=>{trips++;return execute()}}}
+const env={DB:{prepare,async batch(list){trips++;db.exec('BEGIN');try{const result=list.map(s=>s.execute());db.exec('COMMIT');return result}catch(e){db.exec('ROLLBACK');throw e}}}};let cookie='';
+async function call(endpoint,data={}){const response=await api(new Request('https://test.invalid/api/v3/'+endpoint,{method:'POST',headers:{cookie,'Content-Type':'application/json'},body:JSON.stringify(data)}),env);if(response.headers.get('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];const json=await response.json();assert.equal(response.status,200,JSON.stringify(json));return json}
+const p=(await call('session')).profile;let s=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);s.gold=1000;s.active={id:'cash-test',kind:'rocket',bet:100,started:Date.now()-1000,crash:100};db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),p.id);
+trips=statements=0;const data={action:'cashout',activeId:'cash-test',id:crypto.randomUUID()},paid=await call('operation?compact=1',data);const measured={trips,statements};assert(paid.result.settlement.paid>0);assert.equal(paid.profile.gold,1000+paid.result.settlement.paid);assert.equal((await call('operation?compact=1',data)).profile.gold,paid.profile.gold);
+if(!process.argv[2]){assert.equal(measured.trips,3);assert.equal(measured.statements,5)}
+console.log(JSON.stringify({cashout:measured,replay:'no duplicate payout'}));
+// Change the row after authentication, before the CAS: the stale snapshot must retry.
+s=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);s.gold=1000;db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),p.id);
+const original=env.DB.batch;let race=true;env.DB.batch=async list=>{if(race){race=false;const state=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);state.gold+=500;db.prepare('UPDATE players_v3 SET state=?,revision=revision+1 WHERE id=?').run(JSON.stringify(state),p.id)}return original(list)};
+const bought=await call('operation',{id:crypto.randomUUID(),action:'buy',category:'research',item:'hp'});assert.equal(bought.profile.gold,1435);assert.equal(bought.profile.upgrades.hp,1);console.log('PASS: stale authenticated snapshot retries without losing a concurrent wallet update.');
+env.DB.batch=original;
+s=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);s.gold=1000;s.active={id:'parallel-rocket',kind:'rocket',bet:100,started:Date.now()-1000,crash:100};db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),p.id);
+const parallel=await Promise.all([0,1].map(()=>call('operation?compact=1',{id:crypto.randomUUID(),action:'cashout',activeId:'parallel-rocket'})));
+const final=(await call('session')).profile;assert.equal(final.gold,1000+parallel[0].result.settlement.paid);assert.equal(parallel[0].result.settlement.paid,parallel[1].result.settlement.paid);assert(!final.active);
+// A result-read failure must roll back the wallet update and receipt together.
+const before=db.prepare('SELECT state,revision FROM players_v3 WHERE id=?').get(p.id),badId=crypto.randomUUID();env.DB.batch=async list=>original([...list,prepare('SELECT * FROM missing_diagnostic_table')]);
+await assert.rejects(()=>call('operation',{id:badId,action:'buy',category:'research',item:'hp'}));assert.deepEqual(db.prepare('SELECT state,revision FROM players_v3 WHERE id=?').get(p.id),before);assert(!db.prepare('SELECT id FROM operations_v3 WHERE player_id=? AND id=?').get(p.id,badId));
+console.log('PASS: concurrent cashouts pay once; batch failure rolls back both wallet and durable receipt.');
