@@ -242,8 +242,8 @@ function selectMarketGame(id){
  if(window.marketActive)return;
  marketGame=id;$('rocketGame').hidden=id!=='rocket';$('rocketHistoryPanel').hidden=id!=='rocket';$('plinkoGame').hidden=id!=='plinko';$('plinkoHistoryPanel').hidden=id!=='plinko';
  $('rocketGameTab').setAttribute('aria-selected',String(id==='rocket'));$('plinkoGameTab').setAttribute('aria-selected',String(id==='plinko'));
- $('marketTitle').textContent=id==='rocket'?'오락실 · 로켓 탈출':'오락실 · 플린코';
- $('marketDescription').textContent=id==='rocket'?'더 높이, 더 큰 보상. 폭발 전에 수령하세요.':'핀 사이로 튕기는 공. 마지막 착지가 보상을 결정합니다.';
+ $('marketTitle').textContent=id==='rocket'?'오락실 · 드론 탐사':'오락실 · 플린코';
+ $('marketDescription').textContent=id==='rocket'?'안전하게 귀환할까, 다음 구역에 도전할까? 결정은 천천히.':'핀 사이로 튕기는 공. 마지막 착지가 보상을 결정합니다.';
  renderMarket();paintPlinko(rocketNow());
 }
 function plinkoControls(active){
