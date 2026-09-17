@@ -15,3 +15,7 @@ test('save=originalSave');
 test(`selected=0;beginLocalRun({id:'hud',difficulty:0,startWeapon:'gauss'});run.t=0;updateHUD();run.gold=42;run.t=.05;updateHUD(false)`);assert(!test(`$('runGold').textContent.includes('42')`));test('updateHUD()');assert(test(`$('runGold').textContent.includes('42')`));
 test(`renderLoadout();run.weapons.gauss=2;renderLoadout()`);assert(test(`$('loadout').innerHTML.includes('무기 2/5')`));
 console.log('PASS: compact wallet preserves titles and revision ordering; nearest target skips dead targets and preserves ties; HUD events bypass throttle and loadout levels refresh.');
+assert(!fs.readFileSync('dist/index.html','utf8').includes('id="rocketAuto"'));
+test(`accountProfile.active={id:'rocket-manual',kind:'rocket',bet:100,started:Date.now()};restoreActive();rocket.started=0;rocketUpdate(37000)`);
+assert(test('rocket.mult>100'));assert.equal(test('rocket.state'),'flying');assert(!test(`$('rocketStatus').textContent.includes('자동 수령')`));
+console.log('PASS: rocket has no auto target input and continues flying above 100x.');

@@ -209,7 +209,7 @@ function clearRanking(){}
 
 const rocket={state:'idle',bet:0,mult:1,crash:1,started:0,history:[],lastPaint:0};
 function rocketNow(){return performance.now()}
-function rocketLock(active){window.marketActive=active;for(const id of ['campTab','shopTab','marketTab','storeTab','dataBtn','rankingBtn','rocketGameTab','plinkoGameTab','plinkoDrop'])$(id).disabled=active;$('rocketBet').disabled=active;$('rocketAuto').disabled=active;document.querySelectorAll('[data-bet]').forEach(b=>b.disabled=active);$('rocketLaunch').disabled=active;$('rocketCashout').disabled=!active}
+function rocketLock(active){window.marketActive=active;for(const id of ['campTab','shopTab','marketTab','storeTab','dataBtn','rankingBtn','rocketGameTab','plinkoGameTab','plinkoDrop'])$(id).disabled=active;$('rocketBet').disabled=active;document.querySelectorAll('[data-bet]').forEach(b=>b.disabled=active);$('rocketLaunch').disabled=active;$('rocketCashout').disabled=!active}
 function renderMarket(){ $('marketGold').textContent=save.gold.toLocaleString()+' G';if(rocket.state!=='flying')$('rocketLaunch').disabled=window.marketActive||save.gold<100||save.gold>=1e9;paintRocket(rocketNow())}
 function rocketLaunch(){}
 function rocketFinish(){}

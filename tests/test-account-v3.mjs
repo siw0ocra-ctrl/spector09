@@ -32,16 +32,17 @@ legacy=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(play
 r=await op('claimTitles');assert.deepEqual(r.json.profile.titles.owned,['void']);assert.equal(r.json.profile.titles.equipped,null);assert.equal(r.json.profile.gold,35000);
 await op('equipTitle',{item:'void'});r=await call('v3/titles');assert.equal(r.json.profile.titles.equipped,'void');
 console.log('PASS: purchased titles permanent, live eligibility, difficulty isolation, rank loss revokes equip/display, legacy awards removed without wallet changes.');
-// Auto cashout resolves the first event even when polling resumes after both events.
+// Legacy auto targets must not trigger payouts; all rockets now require manual cashout.
 const setRocket=(crash,target,age)=>{const row=db.prepare('SELECT state FROM players_v3 WHERE id=?').get(player),s=JSON.parse(row.state);s.gold=1000;s.active={id:'auto-test',kind:'rocket',bet:100,started:now-age,crash,autoCashout:target};db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),player)};
-setRocket(3,2,100000);r=await op('sync');assert.equal(r.json.result.settlement.paid,200);assert.equal(r.json.result.settlement.multiplier,2);assert.equal(r.json.profile.gold,1200);r=await op('sync');assert.equal(r.json.profile.gold,1200);
+setRocket(3,2,6000);r=await op('sync');assert(r.json.profile.active);assert.equal(r.json.profile.gold,1000);
+setRocket(3,2,100000);r=await op('sync');assert.equal(r.json.result.settlement.paid,0);assert.equal(r.json.result.settlement.multiplier,3);assert.equal(r.json.profile.gold,1000);r=await op('sync');assert.equal(r.json.profile.gold,1000);
 setRocket(1.5,2,100000);r=await op('sync');assert.equal(r.json.result.settlement.paid,0);assert.equal(r.json.result.settlement.multiplier,1.5);
 setRocket(2,2,100000);r=await op('sync');assert.equal(r.json.result.settlement.paid,0);
 setRocket(3,2,1000);r=await op('cashout',{activeId:'auto-test'});assert(r.json.result.settlement.paid>=100&&r.json.result.settlement.paid<200);
-for(const autoCashout of [1,101,1.001,'invalid']){r=await op('rocket',{bet:100,autoCashout});assert.equal(r.status,400)}
+r=await op('rocket',{bet:100,autoCashout:2});assert.equal(r.status,200);assert(!('autoCashout' in r.json.profile.active));await op('abort',{activeId:r.json.profile.active.id});
 // Authentication/database processing time must not move the arrival-time cashout.
 setRocket(1.5,2,1000);const oldPrepare=env.DB.prepare;let delayed=false;env.DB.prepare=(sql,...args)=>{if(!delayed&&sql.includes('FROM sessions_v3')){delayed=true;now+=10000}return oldPrepare(sql,...args)};r=await op('cashout',{activeId:'auto-test'});env.DB.prepare=oldPrepare;assert(r.json.result.settlement.paid>0);
-console.log('PASS: exact auto target after delayed polling, earlier crash/tie loss, manual early exit, target validation, cashout arrival time excludes auth delay.');
+console.log('PASS: no automatic payout including legacy targets, delayed crash loss, manual early exit, cashout arrival time excludes auth delay.');
 setRocket(3,2,1000);let sqlCount=0;env.DB.prepare=(...args)=>{sqlCount++;return oldPrepare(...args)};
 let lean=await compactCall('status');assert.equal(sqlCount,1);assert.equal(lean.profile.titlesUnchanged,true);assert(!('titles' in lean.profile));assert(!('crash' in lean.profile.active));assert(!('seed' in lean.profile.active));
 const leanCashout={id:crypto.randomUUID(),action:'cashout',activeId:'auto-test'};
