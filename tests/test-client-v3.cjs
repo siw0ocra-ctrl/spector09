@@ -23,5 +23,5 @@ vm.runInContext(fs.readFileSync('dist/assets/exploration.js','utf8'),sandbox,{fi
 test(`accountBusy=false;pendingOperation=null;accountReady=true;accountProfile.active={id:'expedition',kind:'explore',bet:500,stage:3,multiplier:1.73};restoreActive()`);
 assert.equal(test('rocket.state'),'idle');assert.equal(test(`$('rocketPayout').textContent`),'865 G');assert.equal(test(`$('rocketLaunch').disabled`),false);assert.equal(test(`$('rocketCashout').disabled`),false);
 test('paintRocket(5000);restoreActive()');assert.equal(test('exploration.stage'),3);
-test(`accountProfile.active=null;renderMarketSettlement({id:'expedition',kind:'explore',stage:3,multiplier:1.73,paid:865,bet:500,outcome:'returned'})`);assert.equal(test('exploration.state'),'returned');assert.equal(test(`$('rocketCashout').disabled`),true);
+test(`accountProfile.active=null;renderMarketSettlement({id:'expedition',kind:'explore',stage:3,multiplier:1.73,paid:865,bet:500,outcome:'returned'})`);assert.equal(test('exploration.state'),'idle');assert.equal(test('exploration.stage'),0);assert.equal(test('exploration.from'),0);assert.equal(test(`$('rocketCashout').disabled`),true);
 console.log('PASS: drone exploration restores confirmed stage/payout without clock progression and supports return.');
