@@ -1,0 +1,13 @@
+SECTOR 09 weapon slot icons
+
+PIXWEP - modular weapons by Zintoki
+Source: https://zintoki.itch.io/pixwep
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+Verified 2026-09-24: creator explicitly permits commercial/non-commercial use and editing, and marks PIXWEP CC0. Official free PIXWEP.zip downloaded, upload 1812689.
+Gauss, laser, flame and lightning icons assemble the pack's original PNG body/barrel/stock/scope modules in SVG wrappers. No purchase-only pack used.
+
+Mine, missile and drone reuse Kenney CC0 artwork already included in the game.
+See LICENSE-combat.txt and LICENSE-drone.txt for sources.
+Nova and small identifying accents use original SVG geometry.
+SVG wrappers embed the selected PNG modules; no external runtime image requests.
