@@ -20,7 +20,7 @@ const research=[
 {id:'hp',name:'강화 장갑',desc:'최대 체력 +20',icon:'HP',base:65,step:20},
 {id:'speed',name:'기동 부스터',desc:'이동 속도 +5%',icon:'MOV',base:70,step:5},
 {id:'regen',name:'나노 복구',desc:'초당 체력 회복 +0.3',icon:'REG',base:95,step:.3},
-{id:'gold',name:'자원 회수 기술',desc:'처치 골드 +10%',icon:'GOLD',base:85,step:10},
+{id:'gold',name:'자산 증식',desc:'처치 골드 +10%',icon:'GOLD',base:85,step:10},
 {id:'magnet',name:'자력 수집기',desc:'경험치 수집 범위 +20%',icon:'MAG',base:60,step:20},
 {id:'reroll',name:'전술 재선택',desc:'게임 입장마다 공용 리롤 +1회',icon:'ROLL',base:150,step:1}
 ];
