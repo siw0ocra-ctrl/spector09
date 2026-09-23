@@ -1,0 +1,10 @@
+SECTOR 09 visual update — Kenney assets, CC0 1.0
+
+Sci-Fi RTS: https://kenney.nl/assets/sci-fi-rts
+Top-down Tanks Remastered: https://kenney.nl/assets/top-down-tanks-remastered
+Particle Pack: https://kenney.nl/assets/particle-pack
+Creator: Kenney (https://kenney.nl)
+License: https://creativecommons.org/publicdomain/zero/1.0/
+
+Selected PNGs resized for the game. Particle colors are applied at runtime.
+Original packs and license files are retained in the development asset archive.
