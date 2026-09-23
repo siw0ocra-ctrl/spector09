@@ -11,3 +11,10 @@ visual(`for(let i=0;i<500;i++)visualEvent('impact',0,0,'gauss')`);assert.equal(v
 const before=visual('combatVisuals.events[0].age');visual('run.paused=true;tick(.1)');assert.equal(visual('combatVisuals.events[0].age'),before);
 visual('beginLocalRun({id:"next",stage:0,difficulty:0,startWeapon:"gauss"});run.paused=false;tick(.01)');assert(visual('combatVisuals.events.length')<96);
 console.log('PASS: all 8 normal/awakened weapons preserve damage, projectile motion, cooldowns and RNG; effects capped, pause-safe and reset between runs.');
+for(const aw of [false,true]){
+ visual(`beginLocalRun({id:'flame',stage:0,difficulty:0,startWeapon:'flame'});run.spawn=999;run.chests=[];run.awakened.flame=${aw};run.enemies=[{x:65,y:0,hp:1e8,maxHp:1e8,r:20,type:0,speed:0,shot:99,angle:0,hit:0}];for(let i=0;i<60;i++)tick(1/60);`);
+ for(let i=0;i<120;i++){visual('tick(1/60)');assert(visual('combatVisuals.flame.opacity')>.98,'Flame should stay visible between damage ticks');}
+ assert.equal(visual('run.fx.filter(f=>f.line&&f.weaponId==="flame").length'),0);
+ visual('run.enemies=[];for(let i=0;i<150;i++)tick(1/60)');assert.equal(visual('combatVisuals.flame'),null);
+}
+console.log('PASS: normal and awakened flames remain continuous between attacks and fade out after firing stops.');

@@ -11,6 +11,7 @@ Scope: all ten campaign maps, plus all eight weapon presentations across every m
 - Nine remaining bosses retain their distinct silhouettes and gain anatomy-specific ore claws, ice clusters, spores, crystals, furnace cannons, solar wings, orbiting crystals, segmented ore armor and six reactor guns. Existing Hard/Extreme attachments and warnings remain active.
 - Gauss tracers, shotgun shells, missile bodies/exhaust/blasts, layered laser beams, expanding nova rings, drone beams, flame plumes and branching lightning have distinct shapes. Awakenings reuse their actual existing shot counts and ranges.
 - Hit flashes, directional sparks and throttled impact sounds; existing sound toggle applies.
+- Overdrive gauss uses long layered rail trails and parallel energy filaments. Flame presentation uses a continuous, gently fading emitter across damage ticks, with warm low-opacity embers instead of bright impact/critical flashes. Both changes preserve attack stats and damage timing.
 
 Presentation hooks consume no gameplay randomness and do not change damage, cooldowns, range, movement or collision. `test-combat-visuals.cjs` compares normal and awakened simulations against unwrapped combat and checks effect bounds/pause/reset. Effects are capped at 96; offscreen transient effects/projectiles are skipped. Particle PNGs are resized to 96px and tinted once per color, avoiding per-frame image filters.
 

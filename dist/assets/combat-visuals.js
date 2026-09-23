@@ -13,17 +13,38 @@ function visualEvent(kind,x,y,id,extra={}){
  events.push({kind,x,y,id,age:0,life:kind==='impact'?.24:kind==='blast'?.48:.13,seed:++combatVisuals.serial,color:visualPalette[id]||'#ffd58e',...extra});
 }
 const visualTickBase=tick;
-tick=function(dt){if(run&&!run.paused&&!run.ended){if(combatVisuals.run!==run){combatVisuals.run=run;combatVisuals.events=[]}for(const e of combatVisuals.events)e.age+=dt;combatVisuals.events=combatVisuals.events.filter(e=>e.age<e.life)}visualTickBase(dt)};
+tick=function(dt){const advancing=run&&!run.paused&&!run.ended;if(advancing){if(combatVisuals.run!==run){combatVisuals.run=run;combatVisuals.events=[];combatVisuals.flame=null}for(const e of combatVisuals.events)e.age+=dt;combatVisuals.events=combatVisuals.events.filter(e=>e.age<e.life)}visualTickBase(dt);if(advancing)updateFlameVisual(dt)};
 const visualFireBase=fire;
 fire=function(a,damage,color,options={}){visualFireBase(a,damage,color,options);const id=options.weaponId;if(!id)return;const recent=combatVisuals.events[combatVisuals.events.length-1];if(recent?.kind==='muzzle'&&recent.id===id&&recent.age===0)return;visualEvent('muzzle',run.x+Math.cos(a)*23,run.y+Math.sin(a)*23,id,{angle:a,aw:!!run.awakened[id]});if(id==='shotgun')beep(90,.11,'triangle',.018);if(id==='missile')beep(120,.16,'sawtooth',.009);};
 const visualHurtBase=hurt;
-hurt=function(e,damage,id){const alive=!e.dead&&!e.opened,wasChest=e.isChest,oldHp=e.hp;visualHurtBase(e,damage,id);if(!alive||!id||(!wasChest&&e.hp===oldHp))return;
+hurt=function(e,damage,id){const alive=!e.dead&&!e.opened,wasChest=e.isChest,oldHp=e.hp,oldHit=e.hit,fxStart=run.fx.length;visualHurtBase(e,damage,id);if(!alive||!id||(!wasChest&&e.hp===oldHp))return;
+ if(id==='flame'){e.hit=oldHit;for(let i=fxStart;i<run.fx.length;i++)run.fx[i].visualMuted=true;}
  if((e.lastVisualHit??-1)<=run.t){e.lastVisualHit=run.t+.07;visualEvent('impact',e.x,e.y,id,{angle:Math.atan2(e.y-run.y,e.x-run.x),size:e.r,dead:e.dead});}
  if(e.dead||wasChest)visualEvent('blast',e.x,e.y,id,{size:Math.min(56,e.r*1.7),life:.42});
  if(soundOn&&run.t>=combatVisuals.audioAt){combatVisuals.audioAt=run.t+.065;beep(id==='missile'?65:id==='laser'?740:id==='lightning'?980:180,.055,id==='laser'||id==='nova'?'sine':'triangle',.009)}
 };
 const visualBeamBase=beam;
-beam=function(x,y,x2,y2,color,width=3,weaponId){visualBeamBase(x,y,x2,y2,color,width);const f=run.fx[run.fx.length-1];f.weaponId=weaponId;f.aw=!!run.awakened[weaponId];f.seed=++combatVisuals.serial;};
+beam=function(x,y,x2,y2,color,width=3,weaponId){
+ if(weaponId==='flame'){
+  // One continuous emitter spans damage ticks, instead of flashing a new set of rays.
+  let f=combatVisuals.flame;if(!f||f.run!==run)f=combatVisuals.flame={run,opacity:0,angle:run.angle};
+  Object.assign(f,{targetAngle:run.angle,range:Math.hypot(x2-x,y2-y),aw:!!run.awakened.flame,until:run.t+.23*weaponStats('flame').cooldown+.08});return;
+ }
+ visualBeamBase(x,y,x2,y2,color,width);const f=run.fx[run.fx.length-1];f.weaponId=weaponId;f.aw=!!run.awakened[weaponId];f.seed=++combatVisuals.serial;
+};
+function updateFlameVisual(dt){const f=combatVisuals.flame;if(!f||f.run!==run)return;const target=run.t<=f.until?1:0;f.opacity+=(target-f.opacity)*(1-Math.exp(-dt*(target?9:6)));const delta=Math.atan2(Math.sin(f.targetAngle-f.angle),Math.cos(f.targetAngle-f.angle));f.angle+=delta*(1-Math.exp(-dt*12));if(!target&&f.opacity<.01)combatVisuals.flame=null;}
+function drawContinuousFlame(sx,sy){
+ const f=combatVisuals.flame;if(!f||f.run!==run||f.opacity<.01)return;
+ const count=f.aw?56:32;ctx.save();ctx.globalAlpha=f.opacity;const x=sx(run.x),y=sy(run.y);
+ for(let i=0;i<count;i++){
+  const phase=(run.t*.8+i*.61803398875)%1,spread=f.aw?i*Math.PI*2/count:f.angle+((i*13%31)/30-.5)*.92;
+  const distance=12+phase*(f.range-20),size=(f.aw?22:18)+phase*22,fade=Math.sin(phase*Math.PI)*.36;
+  const px=x+Math.cos(spread)*distance,py=y+Math.sin(spread)*distance;
+  visualStamp(ctx,'fxMuzzle',px,py,size*.85,size*1.5,spread+Math.PI/2,phase<.4?'#efaa43':'#e77830',fade);
+  visualStamp(ctx,'fxFire',px,py,size*1.3,size*1.3,spread+phase*.4,'#d65e2b',fade*.8);
+ }
+ ctx.restore();
+}
 const visualRingBase=ring;
 ring=function(x,y,r,color,weaponId){visualRingBase(x,y,r,color);const f=run.fx[run.fx.length-1];f.weaponId=weaponId;if(weaponId==='missile'||weaponId==='shotgun')visualEvent('blast',x,y,weaponId,{size:r,life:.48});};
 
@@ -38,6 +59,11 @@ function drawCombatProjectile(b,x,y){
  }else if(id==='shotgun'){
   ctx.strokeStyle='#edaa57';ctx.lineWidth=aw?5:3;ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(0,0);ctx.stroke();
   visualStamp(ctx,'shell',0,0,6,11,Math.PI/2);if(aw)visualStamp(ctx,'fxFire',-6,0,17,12,0,'#ff8339',.7);
+ }else if(aw&&id==='gauss'){
+  // A narrow, long rail slug reads differently from the short shotgun pellet fan.
+  for(const [length,width,tint] of [[96,15,'#8bcf6928'],[78,7,'#c3f77880'],[48,3,'#f0ffc1']]){ctx.strokeStyle=tint;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(-length,0);ctx.lineTo(9,0);ctx.stroke();}
+  ctx.strokeStyle='#b5ea76';ctx.lineWidth=1;for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-64,side*5);ctx.lineTo(-12,side*5);ctx.lineTo(6,0);ctx.stroke();}
+  visualStamp(ctx,'fxTrace',3,0,15,34,Math.PI/2,'#d9ff97',.8);
  }else{
   ctx.strokeStyle='#93c65455';ctx.lineWidth=aw?8:5;ctx.beginPath();ctx.moveTo(-29,0);ctx.lineTo(5,0);ctx.stroke();
   ctx.strokeStyle=color;ctx.lineWidth=aw?3:2;ctx.beginPath();ctx.moveTo(-25,0);ctx.lineTo(7,0);ctx.stroke();
@@ -66,15 +92,16 @@ function combatLine(f,sx,sy){
  }
  ctx.restore();
 }
-drawWeaponEffects=function(sx,sy){for(const f of run.fx)if(f.line)combatLine(f,sx,sy);if(run.weapons.drone)for(const d of dronePositions())drawFriendlyDrone(sx(d.x),sy(d.y),d.angle,run.awakened.drone)};
+drawWeaponEffects=function(sx,sy){drawContinuousFlame(sx,sy);for(const f of run.fx)if(f.line)combatLine(f,sx,sy);if(run.weapons.drone)for(const d of dronePositions())drawFriendlyDrone(sx(d.x),sy(d.y),d.angle,run.awakened.drone)};
 function drawCombatRing(f,sx,sy){
- const progress=1-f.t/f.life,r=f.r+(f.max-f.r)*progress,x=sx(f.x),y=sy(f.y);ctx.save();ctx.globalAlpha=1-progress;ctx.strokeStyle=f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+ const progress=1-f.t/f.life,r=f.r+(f.max-f.r)*progress,x=sx(f.x),y=sy(f.y);ctx.save();ctx.globalAlpha=(1-progress)*(f.visualMuted?.16:1);ctx.strokeStyle=f.visualMuted?'#cc813e':f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
  if(f.weaponId==='nova'){visualStamp(ctx,'fxRing',x,y,r*2,r*2,0,'#81b6ff',.55);ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r*.78,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6+progress*.3;visualStamp(ctx,'fxSpark',x+Math.cos(a)*r,y+Math.sin(a)*r,20,20,a,'#b5d9ff',.8)}}ctx.restore();
 }
 function drawCombatVfx(sx,sy){
  if(combatVisuals.run!==run)return;ctx.save();
  for(const e of combatVisuals.events){const x=sx(e.x),y=sy(e.y);if(x< -120||y< -120||x>W+120||y>H+120)continue;const p=e.age/e.life;ctx.globalAlpha=1-p;
-  if(e.kind==='muzzle')visualStamp(ctx,'fxMuzzle',x,y,e.id==='shotgun'?38:23,e.id==='shotgun'?44:32,e.angle+Math.PI/2,e.color);
+  if(e.id==='flame'){visualStamp(ctx,'fxFire',x,y,18+p*12,18+p*12,e.seed,'#ce7e37',.28);continue;}
+  if(e.kind==='muzzle'){visualStamp(ctx,'fxMuzzle',x,y,e.id==='shotgun'?38:e.aw?30:23,e.id==='shotgun'?44:e.aw?48:32,e.angle+Math.PI/2,e.color);if(e.id==='gauss'&&e.aw)visualStamp(ctx,'fxRing',x,y,18,32,e.angle,'#c8f78d',.5);}
   else if(e.kind==='blast'){const size=e.size*(.45+p*1.4);visualStamp(ctx,'fxSmoke',x,y,size*2,size*2,e.seed,'#a89079',.35);visualStamp(ctx,'fxFire',x,y,size*1.7,size*1.7,e.seed,e.color,p<.6?.7:.2);visualStamp(ctx,'fxFlare',x,y,size*.6,size*.6,0,'#fff2c1',Math.max(0,1-p*3));}
   else{visualStamp(ctx,e.id==='lightning'||e.id==='nova'?'fxSpark':'fxFlare',x,y,22+18*p,22+18*p,e.seed,e.color);ctx.strokeStyle=e.color;ctx.lineWidth=e.dead?2:1.4;for(let i=0;i<5;i++){const a=e.angle+(i-2)*.65+Math.sin(e.seed)*.5,d=5+p*(e.dead?30:20);ctx.beginPath();ctx.moveTo(x+Math.cos(a)*d,y+Math.sin(a)*d);ctx.lineTo(x+Math.cos(a)*(d+6),y+Math.sin(a)*(d+6));ctx.stroke()}}
  }ctx.restore();
