@@ -1,18 +1,18 @@
 const cosmeticCatalog=[
-{id:'suit_shadow',category:'suit',name:'나이트 스펙터',price:12000,color:'#94ffca',desc:'흑연 장갑 · 민트 바이저 · 정찰 안테나'},
-{id:'suit_solar',category:'suit',name:'솔라 센티널',price:18000,color:'#ffe5a0',desc:'황금 장갑 · 확장 견갑 · 백색 바이저'},
-{id:'suit_warden',category:'suit',name:'아크 워든',price:24000,color:'#79eeff',desc:'청강 장갑 · 두 개의 후방 발광 모듈'},
+{id:'suit_shadow',category:'suit',name:'나이트 스펙터',price:12000,color:'#94ffca',desc:'삼각 정찰 후드 · 짧은 망토 · 경량 장갑'},
+{id:'suit_solar',category:'suit',name:'솔라 센티널',price:18000,color:'#ffe5a0',desc:'태양 방패 · T형 바이저 · 중장갑 견갑'},
+{id:'suit_warden',category:'suit',name:'아크 워든',price:24000,color:'#79eeff',desc:'기계형 사각 헤드 · 분리 광학 센서 · 양쪽 추진 날개'},
 {id:'drone_prism',category:'drone',name:'프리즘 감시자',price:18000,color:'#8ce8ff',desc:'세 갈래 보호 날개와 육각 에너지 코어'},
-{id:'trail_plasma',category:'trail',name:'플라스마 리본',price:14500,color:'#81ffe0',desc:'두 줄의 청록 잔광과 밝은 탄두 표시'},
-{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'적동 장갑 · 발열 견갑 · 황금빛 바이저'},
-{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'백청색 장갑 · 냉광 바이저 · 의료 표식'},
-{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'자수정 장갑 · 확장 견갑 · 지휘관 문양'},
+{id:'trail_plasma',category:'trail',name:'플라스마 리본',price:14500,color:'#81ffe0',desc:'이중 리본 잔광 · 곡선 광선 문양 · 플라스마 고리'},
+{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'중장갑 방독 헬멧 · 이중 발열 견갑'},
+{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'극지 후드 · 긴 방한 코트 · 넓은 고글'},
+{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'기사형 첨두 투구 · 비대칭 견갑 · 분할 망토'},
 {id:'drone_arrow',category:'drone',name:'화살촉 드론',price:4000,color:'#89f2ca',desc:'날렵한 삼각 날개형 기체'},
 {id:'drone_orbit',category:'drone',name:'궤도 관측자',price:8000,color:'#d5b8ff',desc:'회전하는 고리가 달린 구형 기체'},
 {id:'drone_crown',category:'drone',name:'황금 수호기',price:14000,color:'#ffe399',desc:'네 갈래 날개를 펼친 황금 기체'},
-{id:'trail_ember',category:'trail',name:'혜성의 꼬리',price:3000,color:'#ffad78',desc:'투사체 뒤로 남는 주황색 잔광'},
-{id:'trail_ice',category:'trail',name:'서리 결정',price:6500,color:'#a2ecff',desc:'투사체에 맺히는 푸른 마름모 결정'},
-{id:'trail_star',category:'trail',name:'별빛 섬광',price:11000,color:'#f6ceff',desc:'투사체마다 반짝이는 별빛 십자'}
+{id:'trail_ember',category:'trail',name:'혜성의 꼬리',price:3000,color:'#ffad78',desc:'갈매기형 잔광 · 화염 문양 · 폭발 가장자리 장식'},
+{id:'trail_ice',category:'trail',name:'서리 결정',price:6500,color:'#a2ecff',desc:'마름모 결정 · 결정형 광선 · 서리 고리'},
+{id:'trail_star',category:'trail',name:'별빛 섬광',price:11000,color:'#f6ceff',desc:'십자 별빛 · 광선 별무늬 · 별자리 파동'}
 ];
 function cleanCosmetics(input){
  const out={owned:[],equipped:{suit:'default',drone:'default',trail:'default'}};
@@ -27,17 +27,18 @@ function equippedCosmetic(category){return cosmeticCatalog.find(c=>c.id===save.c
 function buyCosmetic(){}
 function equipCosmetic(){}
 function renderStore(){
- const names={suit:'전투 슈트',drone:'드론 외형',trail:'탄환 효과'};
- const scope={suit:'모든 무기 · 플레이어 장갑·헬멧·식별 링',drone:'궤도 드론 · 각성 수호 편대',trail:'가우스 소총 · 유도 미사일 (각성 포함)'};
+ const names={suit:'전투 슈트',drone:'드론 외형',trail:'공격 효과'};
+ const scope={suit:'모든 무기 · 플레이어 장갑·헬멧·식별 링',drone:'궤도 드론 · 각성 수호 편대',trail:'드론을 제외한 모든 무기 · 각성 포함'};
  $('storeBalance').textContent=save.gold.toLocaleString()+' G';
  $('storeItems').innerHTML=Object.entries(names).map(([category,name])=>'<section class="store-category"><div class="store-category-head"><h2>'+name+'</h2><button data-reset="'+category+'">기본 외형 장착</button></div><div class="store-grid">'+cosmeticCatalog.filter(c=>c.category===category).sort((a,b)=>a.price-b.price).map(c=>{
  const owned=save.cosmetics.owned.includes(c.id),on=save.cosmetics.equipped[category]===c.id;
- return '<article class="store-card"><canvas data-cosmetic="'+c.id+'" width="360" height="160" aria-label="'+c.name+' 미리보기"></canvas><div class="store-card-body"><small>'+(on?'장착 중':owned?'보유 중':'영구 소장')+'</small><h3>'+c.name+'</h3><p>'+c.desc+'</p><p class="cosmetic-scope"><b>적용 대상</b><br>'+scope[category]+'</p><small class="cosmetic-terms">외형 전용 · 능력치 변화 없음<br>1회 구매로 영구 소장 · 자유롭게 교체</small><button data-cosmetic-buy="'+c.id+'" '+(on||(!owned&&save.gold<c.price)?'disabled':'')+'>'+(on?'장착 완료':owned?'장착하기':'◆ '+c.price.toLocaleString()+' G · 구매 및 장착')+'</button></div></article>'
+ return '<article class="store-card"><canvas data-cosmetic="'+c.id+'" width="360" height="160" aria-label="'+c.name+' 미리보기"></canvas><div class="store-card-body"><small>'+(on?'장착 중':owned?'보유 중':'영구 소장')+'</small><h3>'+c.name+'</h3><p>'+c.desc+'</p>'+(category==='trail'?'<label class="effect-preview-label">무기별 미리보기<select data-effect-preview="'+c.id+'">'+weapons.filter(w=>w.id!=='drone').map(w=>'<option value="'+w.id+'">'+w.name+'</option>').join('')+'</select></label>':'')+'<p class="cosmetic-scope"><b>적용 대상</b><br>'+scope[category]+'</p><small class="cosmetic-terms">외형 전용 · 능력치 변화 없음<br>1회 구매로 영구 소장 · 자유롭게 교체</small><button data-cosmetic-buy="'+c.id+'" '+(on||(!owned&&save.gold<c.price)?'disabled':'')+'>'+(on?'장착 완료':owned?'장착하기':'◆ '+c.price.toLocaleString()+' G · 구매 및 장착')+'</button></div></article>'
  }).join('')+'</div></section>').join('');
  $('storeItems').querySelectorAll('[data-cosmetic-buy]').forEach(b=>b.onclick=()=>{try{const c=cosmeticCatalog.find(c=>c.id===b.dataset.cosmeticBuy);if(save.cosmetics.owned.includes(c.id))equipCosmetic(c.category,c.id);else buyCosmetic(c.id)}catch(e){toast(e.message)}});
  $('storeItems').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{try{equipCosmetic(b.dataset.reset,'default')}catch(e){toast(e.message)}});
- $('storeItems').querySelectorAll('canvas').forEach(el=>{const c=cosmeticCatalog.find(c=>c.id===el.dataset.cosmetic),g=el.getContext('2d');g.fillStyle='#0b171e';g.fillRect(0,0,360,160);g.strokeStyle='#254039';g.beginPath();g.ellipse(180,100,86,26,0,0,Math.PI*2);g.stroke();if(c.category==='suit'){drawPilot(g,180,75,86,-Math.PI/2,c.id); g.strokeStyle=c.color;g.lineWidth=3;g.beginPath();g.ellipse(180,104,38,12,0,0,Math.PI*2);g.stroke()}else if(c.category==='drone')drawCosmeticDrone(g,c,180,76,0,1.8);else for(let i=0;i<5;i++)drawBulletCosmetic(g,c,90+i*44,80,0,i)});
+ $('storeItems').querySelectorAll('canvas').forEach(el=>{const c=cosmeticCatalog.find(c=>c.id===el.dataset.cosmetic),g=el.getContext('2d');g.fillStyle='#0b171e';g.fillRect(0,0,360,160);g.strokeStyle='#254039';g.beginPath();g.ellipse(180,100,86,26,0,0,Math.PI*2);g.stroke();if(c.category==='suit'){drawPilot(g,180,75,86,-Math.PI/2,c.id); g.strokeStyle=c.color;g.lineWidth=3;g.beginPath();g.ellipse(180,104,38,12,0,0,Math.PI*2);g.stroke()}else if(c.category==='drone')drawCosmeticDrone(g,c,180,76,0,1.8);else paintAttackPreview(el,c,'gauss')});bindAttackPreviews();
 }
+function bindAttackPreviews(){for(const select of $('storeItems').querySelectorAll('[data-effect-preview]'))select.onchange=()=>{const item=cosmeticCatalog.find(c=>c.id===select.dataset.effectPreview),canvas=$('storeItems').querySelector('[data-cosmetic="'+item.id+'"]');paintAttackPreview(canvas,item,select.value)}}
 function drawCosmeticDrone(c,item,x,y,a,scale=1){
  c.save();c.translate(x,y);c.rotate(a);c.scale(scale,scale);c.fillStyle=item.color;c.strokeStyle='#10272d';c.lineWidth=2;c.beginPath();
  if(item.id==='drone_arrow'){c.moveTo(25,0);c.lineTo(-16,-18);c.lineTo(-7,0);c.lineTo(-16,18);c.closePath();c.fill();c.stroke()}

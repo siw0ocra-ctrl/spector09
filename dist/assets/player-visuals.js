@@ -14,19 +14,42 @@ function pilotFrame(id='default'){
  if(pilotFrames.has(id))return pilotFrames.get(id);if(!assets.pilotBase?.naturalWidth)return null;
  const style=pilotStyles[id]||pilotStyles.default,cvs=document.createElement('canvas');cvs.width=cvs.height=96;
  const c=cvs.getContext('2d');c.imageSmoothingEnabled=false;
+ const poly=(points,color=style.plate)=>{c.fillStyle=color;c.strokeStyle=style.dark;c.lineWidth=2;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();c.stroke()};
+ if(style.kind==='royal')poly([[30,47],[63,47],[71,83],[51,74],[30,85],[34,64]],style.dark);
+ if(style.kind==='shadow')poly([[31,39],[57,47],[61,78],[47,68],[27,73]],style.dark);
+ if(style.kind==='ice')poly([[31,42],[63,42],[65,72],[49,66],[31,73]],'#d1e4e9');
  c.drawImage(assets.pilotBase,16,8,64,64);
  const panel=(x,y,w,h)=>{c.fillStyle=style.dark;c.fillRect(x-1,y-1,w+2,h+2);c.fillStyle=style.plate;c.fillRect(x,y,w,h);c.fillStyle=style.edge;c.fillRect(x+1,y,w-2,2)};
- panel(31,37,9,16);panel(56,43,9,14);panel(39,57,17,8);
- // Helmet, segmented visor and shoulder identity are visible at combat scale.
- c.fillStyle=style.dark;c.beginPath();c.ellipse(48,45,12,13,0,0,Math.PI*2);c.fill();
- c.fillStyle=style.plate;c.beginPath();c.ellipse(48,44,10,11,0,0,Math.PI*2);c.fill();
- c.fillStyle=style.edge;c.fillRect(43,35,10,2);c.fillStyle='#14232d';c.fillRect(40,41,16,7);
- c.fillStyle=style.visor;c.fillRect(41,42,14,3);c.fillStyle='#efffff';c.fillRect(43,42,5,1);
- if(style.kind==='shadow'){panel(30,32,4,13);c.fillStyle=style.visor;c.fillRect(30,29,3,3);c.fillRect(57,48,6,2)}
- if(style.kind==='solar'||style.kind==='royal'){panel(27,38,8,9);panel(62,43,8,9);c.fillStyle=style.edge;c.fillRect(46,49,4,5)}
- if(style.kind==='warden'){panel(28,52,9,17);panel(61,54,9,17);c.fillStyle=style.visor;c.fillRect(30,61,5,5);c.fillRect(63,63,5,5)}
- if(style.kind==='ember'){c.fillStyle=style.visor;for(let i=0;i<3;i++)c.fillRect(32,41+i*3,6,1)}
- if(style.kind==='ice'){c.fillStyle=style.visor;c.fillRect(59,45,3,8);c.fillRect(57,48,7,2)}
+ // Each suit has a different helmet and major silhouette, not just a palette swap.
+ if(style.kind==='ember'){
+  panel(25,37,13,26);panel(61,39,12,25);panel(37,35,23,24);panel(42,31,13,6);
+  c.fillStyle=style.visor;c.fillRect(40,39,17,4);c.fillStyle=style.dark;for(let i=0;i<4;i++)c.fillRect(40+i*5,49,2,8);
+  c.fillStyle=style.edge;for(let i=0;i<3;i++){c.fillRect(27,43+i*5,9,2);c.fillRect(63,45+i*5,8,2)}
+ }else if(style.kind==='ice'){
+  poly([[47,28],[60,35],[64,51],[55,62],[38,59],[32,45],[37,33]],'#e1eff1');
+  poly([[39,36],[56,36],[59,51],[50,55],[38,49]],style.dark);c.fillStyle=style.visor;c.fillRect(40,39,15,8);
+  panel(27,46,7,12);panel(62,48,7,12);c.fillStyle=style.visor;c.fillRect(63,50,5,2);
+ }else if(style.kind==='royal'){
+  poly([[26,39],[36,35],[39,52],[23,55]]);poly([[58,37],[72,42],[76,59],[58,53]]);
+  poly([[48,26],[59,35],[57,52],[48,60],[37,48],[38,34]]);
+  poly([[39,39],[48,44],[57,38],[53,48],[47,50]],style.visor);c.fillStyle=style.edge;c.fillRect(47,27,3,11);
+ }else if(style.kind==='shadow'){
+  poly([[48,25],[62,48],[56,62],[36,56],[32,45]],style.dark);
+  poly([[47,33],[56,43],[52,51],[38,45]],style.plate);c.fillStyle=style.visor;c.fillRect(42,42,12,2);
+  poly([[26,45],[32,41],[36,56],[25,59]]);panel(61,44,5,15);
+ }else if(style.kind==='solar'){
+  c.fillStyle=style.dark;c.beginPath();c.ellipse(27,51,15,22,-.15,0,Math.PI*2);c.fill();c.strokeStyle=style.edge;c.lineWidth=3;c.beginPath();c.ellipse(27,51,11,18,-.15,0,Math.PI*2);c.stroke();
+  poly([[40,30],[57,30],[62,42],[58,58],[39,58],[35,43]]);panel(60,39,14,17);
+  c.fillStyle=style.visor;c.fillRect(39,40,18,3);c.fillRect(47,41,3,13);c.fillStyle=style.edge;c.fillRect(25,42,4,19);c.fillRect(19,49,16,4);
+ }else if(style.kind==='warden'){
+  poly([[25,30],[34,37],[34,63],[23,73],[23,44]]);poly([[63,37],[74,29],[75,71],[62,63]]);
+  panel(37,34,22,24);panel(41,29,14,5);panel(37,59,22,8);c.fillStyle=style.visor;c.fillRect(40,39,6,6);c.fillRect(50,39,6,6);
+  c.fillRect(25,49,5,14);c.fillRect(67,49,5,14);c.fillStyle=style.dark;c.fillRect(44,51,8,3);
+ }else{
+  panel(31,37,9,16);panel(56,43,9,14);panel(39,57,17,8);
+  c.fillStyle=style.dark;c.beginPath();c.ellipse(48,45,12,13,0,0,Math.PI*2);c.fill();
+  c.fillStyle=style.plate;c.beginPath();c.ellipse(48,44,10,11,0,0,Math.PI*2);c.fill();c.fillStyle=style.visor;c.fillRect(41,42,14,3);
+ }
  pilotFrames.set(id,cvs);return cvs;
 }
 function drawPilot(c,x,y,size,angle,id='default',walk=0,moveAngle=angle,moving=false){

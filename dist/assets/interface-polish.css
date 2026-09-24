@@ -54,3 +54,5 @@ body:not(.combat-view) nav button.active{background:#263829;box-shadow:inset 0 -
 .cosmetic-terms{display:block;margin:0 0 14px;color:#9cabb0;line-height:1.7}
 .touchstick,#stim{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 @media(pointer:coarse){.arena #stim{min-width:78px;min-height:48px}.touchstick{left:max(18px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom))}.arena #stim,.arena .loadout{right:max(10px,env(safe-area-inset-right))}}
+
+.effect-preview-label{display:block;color:#acbbc3;font-size:12px;margin:12px 0}.effect-preview-label select{display:block;width:100%;min-height:44px;margin-top:6px;padding:8px;background:#13252e;color:#eff7f8;border:1px solid #4b646e;border-radius:6px}

@@ -1,18 +1,18 @@
 export const cosmeticCatalog=[
-{id:'suit_shadow',category:'suit',name:'나이트 스펙터',price:12000,color:'#94ffca',desc:'흑연 장갑 · 민트 바이저 · 정찰 안테나'},
-{id:'suit_solar',category:'suit',name:'솔라 센티널',price:18000,color:'#ffe5a0',desc:'황금 장갑 · 확장 견갑 · 백색 바이저'},
-{id:'suit_warden',category:'suit',name:'아크 워든',price:24000,color:'#79eeff',desc:'청강 장갑 · 두 개의 후방 발광 모듈'},
+{id:'suit_shadow',category:'suit',name:'나이트 스펙터',price:12000,color:'#94ffca',desc:'삼각 정찰 후드 · 짧은 망토 · 경량 장갑'},
+{id:'suit_solar',category:'suit',name:'솔라 센티널',price:18000,color:'#ffe5a0',desc:'태양 방패 · T형 바이저 · 중장갑 견갑'},
+{id:'suit_warden',category:'suit',name:'아크 워든',price:24000,color:'#79eeff',desc:'기계형 사각 헤드 · 분리 광학 센서 · 양쪽 추진 날개'},
 {id:'drone_prism',category:'drone',name:'프리즘 감시자',price:18000,color:'#8ce8ff',desc:'세 갈래 보호 날개와 육각 에너지 코어'},
-{id:'trail_plasma',category:'trail',name:'플라스마 리본',price:14500,color:'#81ffe0',desc:'두 줄의 청록 잔광과 밝은 탄두 표시'},
-{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'적동 장갑 · 발열 견갑 · 황금빛 바이저'},
-{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'백청색 장갑 · 냉광 바이저 · 의료 표식'},
-{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'자수정 장갑 · 확장 견갑 · 지휘관 문양'},
+{id:'trail_plasma',category:'trail',name:'플라스마 리본',price:14500,color:'#81ffe0',desc:'이중 리본 잔광 · 곡선 광선 문양 · 플라스마 고리'},
+{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'중장갑 방독 헬멧 · 이중 발열 견갑'},
+{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'극지 후드 · 긴 방한 코트 · 넓은 고글'},
+{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'기사형 첨두 투구 · 비대칭 견갑 · 분할 망토'},
 {id:'drone_arrow',category:'drone',name:'화살촉 드론',price:4000,color:'#89f2ca',desc:'날렵한 삼각 날개형 기체'},
 {id:'drone_orbit',category:'drone',name:'궤도 관측자',price:8000,color:'#d5b8ff',desc:'회전하는 고리가 달린 구형 기체'},
 {id:'drone_crown',category:'drone',name:'황금 수호기',price:14000,color:'#ffe399',desc:'네 갈래 날개를 펼친 황금 기체'},
-{id:'trail_ember',category:'trail',name:'혜성의 꼬리',price:3000,color:'#ffad78',desc:'투사체 뒤로 남는 주황색 잔광'},
-{id:'trail_ice',category:'trail',name:'서리 결정',price:6500,color:'#a2ecff',desc:'투사체에 맺히는 푸른 마름모 결정'},
-{id:'trail_star',category:'trail',name:'별빛 섬광',price:11000,color:'#f6ceff',desc:'투사체마다 반짝이는 별빛 십자'}
+{id:'trail_ember',category:'trail',name:'혜성의 꼬리',price:3000,color:'#ffad78',desc:'갈매기형 잔광 · 화염 문양 · 폭발 가장자리 장식'},
+{id:'trail_ice',category:'trail',name:'서리 결정',price:6500,color:'#a2ecff',desc:'마름모 결정 · 결정형 광선 · 서리 고리'},
+{id:'trail_star',category:'trail',name:'별빛 섬광',price:11000,color:'#f6ceff',desc:'십자 별빛 · 광선 별무늬 · 별자리 파동'}
 ];
 export function cleanCosmetics(input){
  const out={owned:[],equipped:{suit:'default',drone:'default',trail:'default'}};
