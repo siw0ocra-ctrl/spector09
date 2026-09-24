@@ -1,0 +1,11 @@
+Top-down Alien Bug Sprites — W_K_Studio
+Source: https://whiteknightstudios.itch.io/top-down-bug-sprites
+Original download: Bugs topdown.png (itch.io upload 7881181)
+License: Creative Commons Zero v1.0 Universal (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
+Verified 2026-09-24: the author's page labels the asset CC0 and explicitly
+permits commercial use. Its comments also confirm no intended restrictions.
+
+alien-bugs.png is the original, unmodified sprite sheet. SECTOR 09 draws
+selected regions with cached brightness adjustment, movement and role markers.
+These adaptations do not change the CC0 status of the source artwork.
