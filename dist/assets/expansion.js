@@ -1,7 +1,12 @@
 const cosmeticCatalog=[
-{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'주황빛 전투복과 잿불 식별 링'},
-{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'푸른 전투복과 냉광 식별 링'},
-{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'보랏빛 전투복과 자수정 식별 링'},
+{id:'suit_shadow',category:'suit',name:'나이트 스펙터',price:12000,color:'#94ffca',desc:'흑연 장갑 · 민트 바이저 · 정찰 안테나'},
+{id:'suit_solar',category:'suit',name:'솔라 센티널',price:18000,color:'#ffe5a0',desc:'황금 장갑 · 확장 견갑 · 백색 바이저'},
+{id:'suit_warden',category:'suit',name:'아크 워든',price:24000,color:'#79eeff',desc:'청강 장갑 · 두 개의 후방 발광 모듈'},
+{id:'drone_prism',category:'drone',name:'프리즘 감시자',price:18000,color:'#8ce8ff',desc:'세 갈래 보호 날개와 육각 에너지 코어'},
+{id:'trail_plasma',category:'trail',name:'플라스마 리본',price:14500,color:'#81ffe0',desc:'두 줄의 청록 잔광과 밝은 탄두 표시'},
+{id:'suit_ember',category:'suit',name:'잿불 레인저',price:2500,color:'#ff9978',hue:300,desc:'적동 장갑 · 발열 견갑 · 황금빛 바이저'},
+{id:'suit_ice',category:'suit',name:'극지 정찰병',price:5000,color:'#89dfff',hue:100,desc:'백청색 장갑 · 냉광 바이저 · 의료 표식'},
+{id:'suit_royal',category:'suit',name:'황실 원정대',price:9000,color:'#e6bbff',hue:180,desc:'자수정 장갑 · 확장 견갑 · 지휘관 문양'},
 {id:'drone_arrow',category:'drone',name:'화살촉 드론',price:4000,color:'#89f2ca',desc:'날렵한 삼각 날개형 기체'},
 {id:'drone_orbit',category:'drone',name:'궤도 관측자',price:8000,color:'#d5b8ff',desc:'회전하는 고리가 달린 구형 기체'},
 {id:'drone_crown',category:'drone',name:'황금 수호기',price:14000,color:'#ffe399',desc:'네 갈래 날개를 펼친 황금 기체'},
@@ -22,21 +27,22 @@ function equippedCosmetic(category){return cosmeticCatalog.find(c=>c.id===save.c
 function buyCosmetic(){}
 function equipCosmetic(){}
 function renderStore(){
- const names={suit:'캐릭터 색상',drone:'드론 외형',trail:'탄환 효과'};
- const scope={suit:'모든 무기 · 플레이어 전투복과 식별 링',drone:'궤도 드론 · 각성 수호 편대',trail:'가우스 소총 · 유도 미사일 (각성 포함)'};
+ const names={suit:'전투 슈트',drone:'드론 외형',trail:'탄환 효과'};
+ const scope={suit:'모든 무기 · 플레이어 장갑·헬멧·식별 링',drone:'궤도 드론 · 각성 수호 편대',trail:'가우스 소총 · 유도 미사일 (각성 포함)'};
  $('storeBalance').textContent=save.gold.toLocaleString()+' G';
- $('storeItems').innerHTML=Object.entries(names).map(([category,name])=>'<section class="store-category"><div class="store-category-head"><h2>'+name+'</h2><button data-reset="'+category+'">기본 외형 장착</button></div><div class="store-grid">'+cosmeticCatalog.filter(c=>c.category===category).map(c=>{
+ $('storeItems').innerHTML=Object.entries(names).map(([category,name])=>'<section class="store-category"><div class="store-category-head"><h2>'+name+'</h2><button data-reset="'+category+'">기본 외형 장착</button></div><div class="store-grid">'+cosmeticCatalog.filter(c=>c.category===category).sort((a,b)=>a.price-b.price).map(c=>{
  const owned=save.cosmetics.owned.includes(c.id),on=save.cosmetics.equipped[category]===c.id;
  return '<article class="store-card"><canvas data-cosmetic="'+c.id+'" width="360" height="160" aria-label="'+c.name+' 미리보기"></canvas><div class="store-card-body"><small>'+(on?'장착 중':owned?'보유 중':'영구 소장')+'</small><h3>'+c.name+'</h3><p>'+c.desc+'</p><p class="cosmetic-scope"><b>적용 대상</b><br>'+scope[category]+'</p><small class="cosmetic-terms">외형 전용 · 능력치 변화 없음<br>1회 구매로 영구 소장 · 자유롭게 교체</small><button data-cosmetic-buy="'+c.id+'" '+(on||(!owned&&save.gold<c.price)?'disabled':'')+'>'+(on?'장착 완료':owned?'장착하기':'◆ '+c.price.toLocaleString()+' G · 구매 및 장착')+'</button></div></article>'
  }).join('')+'</div></section>').join('');
  $('storeItems').querySelectorAll('[data-cosmetic-buy]').forEach(b=>b.onclick=()=>{try{const c=cosmeticCatalog.find(c=>c.id===b.dataset.cosmeticBuy);if(save.cosmetics.owned.includes(c.id))equipCosmetic(c.category,c.id);else buyCosmetic(c.id)}catch(e){toast(e.message)}});
  $('storeItems').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{try{equipCosmetic(b.dataset.reset,'default')}catch(e){toast(e.message)}});
- $('storeItems').querySelectorAll('canvas').forEach(el=>{const c=cosmeticCatalog.find(c=>c.id===el.dataset.cosmetic),g=el.getContext('2d');g.fillStyle='#0b171e';g.fillRect(0,0,360,160);g.strokeStyle='#254039';g.beginPath();g.ellipse(180,100,86,26,0,0,Math.PI*2);g.stroke();if(c.category==='suit'){g.save();g.filter='hue-rotate('+c.hue+'deg)';sprite(g,'player',180,75,65,-Math.PI/2);g.restore();g.strokeStyle=c.color;g.lineWidth=3;g.beginPath();g.ellipse(180,104,38,12,0,0,Math.PI*2);g.stroke()}else if(c.category==='drone')drawCosmeticDrone(g,c,180,76,0,1.8);else for(let i=0;i<5;i++)drawBulletCosmetic(g,c,90+i*44,80,0,i)});
+ $('storeItems').querySelectorAll('canvas').forEach(el=>{const c=cosmeticCatalog.find(c=>c.id===el.dataset.cosmetic),g=el.getContext('2d');g.fillStyle='#0b171e';g.fillRect(0,0,360,160);g.strokeStyle='#254039';g.beginPath();g.ellipse(180,100,86,26,0,0,Math.PI*2);g.stroke();if(c.category==='suit'){drawPilot(g,180,75,86,-Math.PI/2,c.id); g.strokeStyle=c.color;g.lineWidth=3;g.beginPath();g.ellipse(180,104,38,12,0,0,Math.PI*2);g.stroke()}else if(c.category==='drone')drawCosmeticDrone(g,c,180,76,0,1.8);else for(let i=0;i<5;i++)drawBulletCosmetic(g,c,90+i*44,80,0,i)});
 }
 function drawCosmeticDrone(c,item,x,y,a,scale=1){
  c.save();c.translate(x,y);c.rotate(a);c.scale(scale,scale);c.fillStyle=item.color;c.strokeStyle='#10272d';c.lineWidth=2;c.beginPath();
  if(item.id==='drone_arrow'){c.moveTo(25,0);c.lineTo(-16,-18);c.lineTo(-7,0);c.lineTo(-16,18);c.closePath();c.fill();c.stroke()}
  else if(item.id==='drone_orbit'){c.strokeStyle=item.color;c.lineWidth=3;c.ellipse(0,0,22,13,0,0,Math.PI*2);c.stroke();c.beginPath();c.arc(0,0,10,0,Math.PI*2);c.fill()}
+ else if(item.id==='drone_prism'){c.strokeStyle=item.color;c.lineWidth=3;for(let i=0;i<3;i++){const a=i*Math.PI*2/3;c.save();c.rotate(a);c.beginPath();c.moveTo(10,-7);c.lineTo(27,0);c.lineTo(10,7);c.stroke();c.restore()}c.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;i?c.lineTo(Math.cos(a)*10,Math.sin(a)*10):c.moveTo(10,0)}c.closePath();c.fill()}
  else{for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2?9:25;i?c.lineTo(Math.cos(a)*r,Math.sin(a)*r):c.moveTo(r,0)}c.closePath();c.fill();c.stroke()}
  c.fillStyle='#173740';c.beginPath();c.arc(3,0,5,0,Math.PI*2);c.fill();c.restore();
 }
@@ -44,6 +50,7 @@ function drawBulletCosmetic(c,item,x,y,a,time){
  c.save();c.translate(x,y);c.rotate(a);c.strokeStyle=item.color;c.fillStyle=item.color;c.lineWidth=2;c.beginPath();
  if(item.id==='trail_ember'){c.moveTo(-19,0);c.lineTo(4,0);c.stroke();c.globalAlpha=.3;c.beginPath();c.arc(-8,0,5,0,Math.PI*2);c.fill()}
  else if(item.id==='trail_ice'){c.moveTo(7,0);c.lineTo(0,-5);c.lineTo(-7,0);c.lineTo(0,5);c.closePath();c.stroke()}
+ else if(item.id==='trail_plasma'){for(const side of [-1,1]){c.moveTo(-22,side*4);c.lineTo(-5,side*2);c.lineTo(3,0)}c.stroke();c.fillStyle='#efffff';c.fillRect(0,-1,7,2)}
  else{c.rotate(time*3);c.moveTo(-7,0);c.lineTo(7,0);c.moveTo(0,-7);c.lineTo(0,7);c.stroke()}
  c.restore();
 }

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {DatabaseSync} from 'node:sqlite';import {api} from '../server/api.mjs';
+const db=new DatabaseSync(':memory:');for(const file of fs.readdirSync('drizzle').filter(x=>x.endsWith('.sql')).sort())db.exec(fs.readFileSync('drizzle/'+file,'utf8'));
+function prepare(sql,args=[]){return {bind(...values){return prepare(sql,values)},first:async()=>db.prepare(sql).get(...args)||null,all:async()=>({results:db.prepare(sql).all(...args)}),run:async()=>(/^SELECT/i.test(sql)?{results:db.prepare(sql).all(...args)}:{results:[],meta:db.prepare(sql).run(...args)})}}
+const env={SAVE_KEY:Buffer.alloc(32,7).toString('base64'),DB:{prepare,async batch(statements){db.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());db.exec('COMMIT');return result}catch(e){db.exec('ROLLBACK');throw e}}}};
+let cookie='',now=Date.now();Date.now=()=>now;
+async function call(path,data={},ck=cookie){const r=await api(new Request('https://game.test/api/'+path,{method:path.includes('?')?'GET':'POST',headers:{'Content-Type':'application/json',cookie:ck,origin:'https://game.test'},body:path.includes('?')?undefined:JSON.stringify(data)}),env);return {status:r.status,json:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]}}
+const op=(action,fields={},id=crypto.randomUUID())=>call('v3/operation',{id,action,...fields});
+async function compactCall(path,data={}){const response=await api(new Request('https://game.test/api/v3/'+path+'?compact=1',{method:'POST',headers:{'Content-Type':'application/json',cookie,origin:'https://game.test'},body:JSON.stringify(data)}),env);assert.equal(response.status,200);return response.json()}
+
+const {cosmeticCatalog,cleanCosmetics}=await import('../server/catalog.mjs');
+const vm=await import('node:vm');const client=fs.readFileSync('dist/assets/expansion.js','utf8').match(/const cosmeticCatalog=(\[[\s\S]*?\n\]);/)[1];
+assert.deepEqual(JSON.parse(vm.runInNewContext('JSON.stringify('+client+')')),cosmeticCatalog);
+let r=await call('v3/session');cookie=r.cookie;const player=r.json.profile.id;
+let state=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(player).state);state.gold=150000;state.cosmetics={owned:['suit_ember','suit_ice','suit_royal'],equipped:{suit:'suit_royal',drone:'default',trail:'default'}};db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(state),player);
+let balance=150000;for(const item of ['suit_shadow','suit_solar','suit_warden','drone_prism','trail_plasma']){const id=crypto.randomUUID(),entry=cosmeticCatalog.find(c=>c.id===item);r=await op('buy',{category:'cosmetic',item,price:1},id);assert.equal(r.status,200);balance-=entry.price;assert.equal(r.json.profile.gold,balance);assert.equal(r.json.profile.cosmetics.equipped[entry.category],item);assert(r.json.profile.cosmetics.owned.includes('suit_royal'));r=await op('buy',{category:'cosmetic',item,price:1},id);assert.equal(r.json.profile.gold,balance);assert.equal((await op('buy',{category:'cosmetic',item})).status,400)}
+r=await op('equip',{category:'suit',item:'suit_ember'});assert.equal(r.status,200);assert.equal(r.json.profile.cosmetics.equipped.suit,'suit_ember');assert.equal(r.json.profile.gold,balance);r=await op('equip',{category:'suit',item:'default'});assert.equal(r.status,200);assert.equal(r.json.profile.gold,balance);
+assert.throws(()=>cleanCosmetics({owned:[],equipped:{suit:'suit_warden'}}));
+console.log('PASS: 14 matching client/server products; 5 new purchases, server prices, idempotent replay, duplicate rejection, old ownership/equipment retained, free default reset');

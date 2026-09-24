@@ -1,0 +1,10 @@
+2D Topdown Survival Character — fightswithbears
+https://fightswithbears.itch.io/2d-topdown-survival-character
+Source: survivor_rifle.png (itch.io upload 14649737)
+License: Creative Commons Zero v1.0 Universal (CC0)
+https://creativecommons.org/publicdomain/zero/1.0/
+Verified 2026-09-24 on the author's asset page.
+
+pilot-base.png is the unmodified original. SECTOR 09 overlays its own armor,
+helmet and visor panels in a cached canvas and adds procedural leg movement.
+This is not an animation pack supplied by the original author.

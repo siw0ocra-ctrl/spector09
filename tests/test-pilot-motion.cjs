@@ -1,0 +1,8 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const harness=fs.readFileSync('tests/test-client-v3.cjs','utf8').split('const test=s=>')[0];
+function make(enabled){const c={require,console,AbortController,structuredClone};vm.createContext(c);let h=harness;if(!enabled)h=h.replace("'dist/assets/player-visuals.js',",'').replace('vm.createContext(sandbox);','sandbox.drawPilot=()=>{};vm.createContext(sandbox);');vm.runInContext(h,c);return s=>vm.runInContext('vm.runInContext('+JSON.stringify(s)+',sandbox)',c)}
+const baseline=make(false),current=make(true),setup=`assetsReady=true;selected=0;beginLocalRun({id:'pilot',stage:0,difficulty:0,startWeapon:'gauss'});var seed=18;Math.random=()=>{seed=seed*16807%2147483647;return seed/2147483647};run.chests=[];run.next=run.spawn=1e9;run.hp=1e9;run.enemies=Array.from({length:20},(_,i)=>({x:80+i*20,y:50-i*10,hp:10000,maxHp:10000,r:20,type:0,speed:20,shot:1e9,hit:0}));keys={d:true};for(let i=0;i<180;i++)tick(1/60);JSON.stringify({x:run.x,y:run.y,t:run.t,angle:run.angle,hp:run.hp,damage:run.weaponDamage,enemies:run.enemies.map(e=>[e.x,e.y,e.hp]),seed})`;
+assert.equal(baseline(setup),current(setup));
+current('keys={};tick(1/60);var stationaryWalk=run.pilotVisual.walk;for(let i=0;i<30;i++)tick(1/60)');assert.equal(current('stationaryWalk'),current('run.pilotVisual.walk'));
+current('run.paused=true;var pausedPilot=JSON.stringify(run.pilotVisual);tick(.1)');assert.equal(current('pausedPilot'),current('JSON.stringify(run.pilotVisual)'));
+console.log('PASS: pilot animation preserves combat motion, aim, damage and RNG; standing and pause freeze walking');
