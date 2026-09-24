@@ -1,0 +1,9 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const harness=fs.readFileSync('tests/test-client-v3.cjs','utf8').split('const test=s=>')[0],ctx={require,console,AbortController,structuredClone};vm.createContext(ctx);vm.runInContext(harness,ctx);const test=s=>vm.runInContext('vm.runInContext('+JSON.stringify(s)+',sandbox)',ctx);
+for(const id of ['nova','flame'])for(const level of [1,3,5])for(const aw of [false,true]){
+ test(`assetsReady=true;selected=0;beginLocalRun({id:'balance',stage:0,difficulty:0,startWeapon:'${id}'});run.weapons['${id}']=${level};run.awakened['${id}']=${aw};run.chests=[];Math.random=()=>.5;run.enemies=[{x:50,y:0,hp:10000,r:15,type:0}];var expectedDamage=weaponStats('${id}').damage*${id==='nova'?1.8:.42};weaponTick(.001)`);
+ assert(Math.abs(test('10000-run.enemies[0].hp-expectedDamage'))<1e-8);assert(test(`weaponDetails('${id}').includes(expectedDamage.toFixed(1))`));
+}
+const parity=test(`(()=>{let seed=81;const rng=()=>{seed=seed*16807%2147483647;return seed/2147483647};for(let i=0;i<1000;i++){const targets=Array.from({length:180},(_,id)=>({id,x:Math.floor(rng()*900)-450,y:Math.floor(rng()*900)-450,r:10+Math.floor(rng()*40),isChest:rng()<.1}));const x=rng()*100,y=rng()*100,range=220;const expected=targets.filter(e=>Math.hypot(e.x-x,e.y-y)<=range+e.r).sort((a,b)=>Number(!!a.isChest)-Number(!!b.isChest)||Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0];if(expected!==nearestDroneTarget(targets,x,y,range))return false}return true})()`);assert(parity);
+assert.equal(test(`nearestDroneTarget([{x:1,y:0,r:0,id:1,isChest:true},{x:20,y:0,r:0,id:2},{x:-20,y:0,r:0,id:3}],0,0,20).id`),2);
+console.log('PASS: nova/flame damage and displayed stats at levels 1/3/5, normal/awakened; 1,000 drone selection parity cases including chest priority, ties and range');

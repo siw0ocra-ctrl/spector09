@@ -23,10 +23,11 @@ function buyCosmetic(){}
 function equipCosmetic(){}
 function renderStore(){
  const names={suit:'캐릭터 색상',drone:'드론 외형',trail:'탄환 효과'};
+ const scope={suit:'모든 무기 · 플레이어 전투복과 식별 링',drone:'궤도 드론 · 각성 수호 편대',trail:'가우스 소총 · 유도 미사일 (각성 포함)'};
  $('storeBalance').textContent=save.gold.toLocaleString()+' G';
  $('storeItems').innerHTML=Object.entries(names).map(([category,name])=>'<section class="store-category"><div class="store-category-head"><h2>'+name+'</h2><button data-reset="'+category+'">기본 외형 장착</button></div><div class="store-grid">'+cosmeticCatalog.filter(c=>c.category===category).map(c=>{
  const owned=save.cosmetics.owned.includes(c.id),on=save.cosmetics.equipped[category]===c.id;
- return '<article class="store-card"><canvas data-cosmetic="'+c.id+'" width="360" height="160" aria-label="'+c.name+' 미리보기"></canvas><div class="store-card-body"><small>'+(on?'장착 중':owned?'보유 중':'영구 소장')+'</small><h3>'+c.name+'</h3><p>'+c.desc+'</p><button data-cosmetic-buy="'+c.id+'" '+(on||(!owned&&save.gold<c.price)?'disabled':'')+'>'+(on?'장착 완료':owned?'장착하기':'◆ '+c.price.toLocaleString()+' G · 구매 및 장착')+'</button></div></article>'
+ return '<article class="store-card"><canvas data-cosmetic="'+c.id+'" width="360" height="160" aria-label="'+c.name+' 미리보기"></canvas><div class="store-card-body"><small>'+(on?'장착 중':owned?'보유 중':'영구 소장')+'</small><h3>'+c.name+'</h3><p>'+c.desc+'</p><p class="cosmetic-scope"><b>적용 대상</b><br>'+scope[category]+'</p><small class="cosmetic-terms">외형 전용 · 능력치 변화 없음<br>1회 구매로 영구 소장 · 자유롭게 교체</small><button data-cosmetic-buy="'+c.id+'" '+(on||(!owned&&save.gold<c.price)?'disabled':'')+'>'+(on?'장착 완료':owned?'장착하기':'◆ '+c.price.toLocaleString()+' G · 구매 및 장착')+'</button></div></article>'
  }).join('')+'</div></section>').join('');
  $('storeItems').querySelectorAll('[data-cosmetic-buy]').forEach(b=>b.onclick=()=>{try{const c=cosmeticCatalog.find(c=>c.id===b.dataset.cosmeticBuy);if(save.cosmetics.owned.includes(c.id))equipCosmetic(c.category,c.id);else buyCosmetic(c.id)}catch(e){toast(e.message)}});
  $('storeItems').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{try{equipCosmetic(b.dataset.reset,'default')}catch(e){toast(e.message)}});

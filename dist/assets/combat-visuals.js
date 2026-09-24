@@ -73,6 +73,7 @@ function drawCombatProjectile(b,x,y){
 }
 function combatLine(f,sx,sy){
  const x=sx(f.x),y=sy(f.y),dx=f.x2-f.x,dy=f.y2-f.y,len=Math.hypot(dx,dy),a=Math.atan2(dy,dx),fade=f.t/f.life,id=f.weaponId;
+ if(Math.max(x,sx(f.x2))< -40||Math.min(x,sx(f.x2))>W+40||Math.max(y,sy(f.y2))< -40||Math.min(y,sy(f.y2))>H+40)return;
  ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.globalAlpha=fade;ctx.lineCap='round';
  if(id==='flame'){
   // Every flame ray stays inside the existing cone/range; particles never apply damage.
@@ -94,7 +95,7 @@ function combatLine(f,sx,sy){
 }
 drawWeaponEffects=function(sx,sy){drawContinuousFlame(sx,sy);for(const f of run.fx)if(f.line)combatLine(f,sx,sy);if(run.weapons.drone)for(const d of dronePositions())drawFriendlyDrone(sx(d.x),sy(d.y),d.angle,run.awakened.drone)};
 function drawCombatRing(f,sx,sy){
- const progress=1-f.t/f.life,r=f.r+(f.max-f.r)*progress,x=sx(f.x),y=sy(f.y);ctx.save();ctx.globalAlpha=(1-progress)*(f.visualMuted?.16:1);ctx.strokeStyle=f.visualMuted?'#cc813e':f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+ const progress=1-f.t/f.life,r=f.r+(f.max-f.r)*progress,x=sx(f.x),y=sy(f.y);if(x+r+24<0||y+r+24<0||x-r-24>W||y-r-24>H)return;ctx.save();ctx.globalAlpha=(1-progress)*(f.visualMuted?.16:1);ctx.strokeStyle=f.visualMuted?'#cc813e':f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
  if(f.weaponId==='nova'&&!simpleEffects){visualStamp(ctx,'fxRing',x,y,r*2,r*2,0,'#81b6ff',.55);ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r*.78,0,Math.PI*2);ctx.stroke();for(let i=0;i<12;i++){const a=i*Math.PI/6+progress*.3;visualStamp(ctx,'fxSpark',x+Math.cos(a)*r,y+Math.sin(a)*r,20,20,a,'#b5d9ff',.8)}}ctx.restore();
 }
 function drawCombatVfx(sx,sy){
