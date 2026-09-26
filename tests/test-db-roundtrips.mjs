@@ -6,7 +6,7 @@ const env={DB:{prepare,async batch(list){trips++;db.exec('BEGIN');try{const resu
 async function call(endpoint,data={}){const response=await api(new Request('https://test.invalid/api/v3/'+endpoint,{method:'POST',headers:{cookie,'Content-Type':'application/json'},body:JSON.stringify(data)}),env);if(response.headers.get('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];const json=await response.json();assert.equal(response.status,200,JSON.stringify(json));return json}
 const p=(await call('session')).profile;let s=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);s.gold=1000;s.active={id:'cash-test',kind:'rocket',bet:100,started:Date.now()-1000,crash:100};db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),p.id);
 trips=statements=0;const data={action:'cashout',activeId:'cash-test',id:crypto.randomUUID()},paid=await call('operation?compact=1',data);const measured={trips,statements};assert(paid.result.settlement.paid>0);assert.equal(paid.profile.gold,1000+paid.result.settlement.paid);assert.equal((await call('operation?compact=1',data)).profile.gold,paid.profile.gold);
-if(!process.argv[2]){assert.equal(measured.trips,3);assert.equal(measured.statements,5)}
+if(!process.argv[2]){assert.equal(measured.trips,2);assert.equal(measured.statements,4)}
 console.log(JSON.stringify({cashout:measured,replay:'no duplicate payout'}));
 // Change the row after authentication, before the CAS: the stale snapshot must retry.
 s=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);s.gold=1000;db.prepare('UPDATE players_v3 SET state=? WHERE id=?').run(JSON.stringify(s),p.id);
