@@ -20,3 +20,14 @@ const final=(await call('session')).profile;assert.equal(final.gold,1000+paralle
 const before=db.prepare('SELECT state,revision FROM players_v3 WHERE id=?').get(p.id),badId=crypto.randomUUID();env.DB.batch=async list=>original([...list,prepare('SELECT * FROM missing_diagnostic_table')]);
 await assert.rejects(()=>call('operation',{id:badId,action:'buy',category:'research',item:'hp'}));assert.deepEqual(db.prepare('SELECT state,revision FROM players_v3 WHERE id=?').get(p.id),before);assert(!db.prepare('SELECT id FROM operations_v3 WHERE player_id=? AND id=?').get(p.id,badId));
 console.log('PASS: concurrent cashouts pay once; batch failure rolls back both wallet and durable receipt.');
+
+// Compact ordinary purchases and starts omit ranking queries; replay is one fresh joined read.
+env.DB.batch=original;
+for(const category of ['research','weapon']){
+ const data={id:crypto.randomUUID(),action:'buy',category,item:category==='research'?'hp':'gauss'};
+ trips=statements=0;const bought=await call('operation?compact=1',data);assert.equal(trips,2);assert.equal(bought.profile.titlesUnchanged,true);assert(!bought.profile.titles);
+ const state=JSON.parse(db.prepare('SELECT state FROM players_v3 WHERE id=?').get(p.id).state);state.gold+=11;db.prepare('UPDATE players_v3 SET state=?,revision=revision+1 WHERE id=?').run(JSON.stringify(state),p.id);
+ trips=statements=0;const replay=await call('operation?compact=1',data);assert.equal(trips,1);assert.equal(replay.profile.gold,bought.profile.gold+11);assert.deepEqual(replay.result,bought.result);
+}
+trips=0;const started=await call('operation?compact=1',{id:crypto.randomUUID(),action:'start',difficulty:0,stage:0});assert.equal(trips,2);assert.equal(started.profile.titlesUnchanged,true);assert(!started.result.run.snapshot);
+console.log('PASS: compact research/weapon/start use two trips; replay uses one fresh joined read and preserves newer balance.');
