@@ -60,10 +60,10 @@ function drawCombatProjectile(b,x,y){
   ctx.strokeStyle='#edaa57';ctx.lineWidth=aw?5:3;ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(0,0);ctx.stroke();
   visualStamp(ctx,'shell',0,0,6,11,Math.PI/2);if(aw)visualStamp(ctx,'fxFire',-6,0,17,12,0,'#ff8339',.7);
  }else if(aw&&id==='gauss'){
-  // A narrow, long rail slug reads differently from the short shotgun pellet fan.
-  for(const [length,width,tint] of [[96,15,'#8bcf6928'],[78,7,'#c3f77880'],[48,3,'#f0ffc1']]){ctx.strokeStyle=tint;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(-length,0);ctx.lineTo(9,0);ctx.stroke();}
-  ctx.strokeStyle='#b5ea76';ctx.lineWidth=1;for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(-64,side*5);ctx.lineTo(-12,side*5);ctx.lineTo(6,0);ctx.stroke();}
-  visualStamp(ctx,'fxTrace',3,0,15,34,Math.PI/2,'#d9ff97',.8);
+  // Short tracers leave visible space between each first shot and its follow-up.
+  ctx.strokeStyle=b.followup?'#ffd18a66':'#b7eb8166';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-23,0);ctx.lineTo(6,0);ctx.stroke();
+  ctx.strokeStyle=b.followup?'#ffe0a0':'#e7ffc1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(7,0);ctx.stroke();
+  visualStamp(ctx,'fxTrace',3,0,8,15,Math.PI/2,b.followup?'#ffe0a0':'#d9ff97',.8);
  }else{
   ctx.strokeStyle='#93c65455';ctx.lineWidth=aw?8:5;ctx.beginPath();ctx.moveTo(-29,0);ctx.lineTo(5,0);ctx.stroke();
   ctx.strokeStyle=color;ctx.lineWidth=aw?3:2;ctx.beginPath();ctx.moveTo(-25,0);ctx.lineTo(7,0);ctx.stroke();
