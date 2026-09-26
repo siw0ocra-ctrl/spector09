@@ -47,3 +47,8 @@ requests=[];await evaluate('syncAccount()');assert.equal(requests.length,1);asse
 loseResponse=true;await evaluate("transact('buy',{category:'research',item:'hp'})");const confirmed=state().gold;requests=[];
 await evaluate('syncAccount()');assert.equal(requests.length,1);assert.equal(requests[0].action,'buy');assert.equal(state().gold,confirmed);assert.equal(evaluate('save.gold'),confirmed);
 console.log('PASS: connected refresh uses one sync; uncertain purchase recovery reuses its response without redundant session/sync requests.');
+
+// An idle session already contains current state; active games still need server settlement.
+evaluate('accountReady=false;accountSyncing=false;pendingOperation=null');requests=[];await evaluate('syncAccount()');assert.equal(requests.length,1);assert.equal(requests[0].action,undefined);assert.equal(evaluate('save.gold'),state().gold);
+const activeRun=await op('start',{difficulty:0,stage:0});assert.equal(activeRun.status,200);evaluate('accountReady=false;accountSyncing=false');requests=[];await evaluate('syncAccount()');assert.equal(requests.length,2);assert.equal(requests[1].action,'sync');assert.equal(evaluate('accountProfile.active.id'),activeRun.body.result.run.id);
+console.log('PASS: idle initial session skips duplicate sync; active initial session retains sync.');
