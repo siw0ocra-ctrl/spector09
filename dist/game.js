@@ -17,7 +17,7 @@ const stages=[
 ];
 const research=[
 {id:'crit',name:'치명타 확률',desc:'모든 무기 치명타 확률 +3%p',icon:'CRIT',base:120,step:3},
-{id:'damage',name:'가우스 가속기',desc:'기본 공격력 +12%',icon:'ATK',base:80,step:12},
+{id:'damage',name:'무기 개조',desc:'기본 공격력 +12%',icon:'ATK',base:80,step:12},
 {id:'hp',name:'강화 장갑',desc:'최대 체력 +20',icon:'HP',base:65,step:20},
 {id:'speed',name:'기동 부스터',desc:'이동 속도 +5%',icon:'MOV',base:70,step:5},
 {id:'regen',name:'나노 복구',desc:'초당 체력 회복 +0.3',icon:'REG',base:95,step:.3},
@@ -27,14 +27,14 @@ const research=[
 ];
 
 const weapons=[
-{id:'gauss',name:'가우스 소총',icon:'AR',desc:'Lv.3 2발 · Lv.5 3발 · 좁은 부채꼴 사격',passive:'rapid',awake:'오버드라이브',effect:'부채꼴 3발 + 0.09초 뒤 같은 방향 후속 3발 · 후속탄 피해 60%',base:90,color:'#def49b'},
+{id:'gauss',name:'돌격 소총',icon:'AR',desc:'Lv.3 2발 · Lv.5 3발 · 좁은 부채꼴 사격',passive:'rapid',awake:'오버드라이브',effect:'부채꼴 3발 + 0.09초 뒤 같은 방향 후속 3발 · 후속탄 피해 60%',base:90,color:'#def49b'},
 {id:'shotgun',name:'전술 지뢰',icon:'MN',desc:'발밑 설치 · 적 접근 시 범위 폭발',passive:'wealth',awake:'자기장 지뢰',effect:'자기장 감속 · 강화 폭발',base:100,color:'#f5bf77'},
-{id:'laser',name:'레이저',icon:'LA',desc:'직선상의 모든 적을 관통',passive:'area',awake:'궤도 절단기',effect:'3방향 광선 · 사거리 증가',base:120,color:'#70e4e8'},
+{id:'laser',name:'레이저 라이플',icon:'LA',desc:'직선상의 모든 적을 관통',passive:'area',awake:'궤도 절단기',effect:'3방향 광선 · 사거리 증가',base:120,color:'#70e4e8'},
 {id:'missile',name:'유도 미사일',icon:'MS',desc:'적을 추적하는 범위 폭발탄',passive:'power',awake:'아포칼립스',effect:'3연발 유도탄 · 폭발 범위 증가',base:120,color:'#ff9b6a'},
-{id:'nova',name:'전기 충격파',icon:'NV',desc:'주변의 모든 적에게 원형 피해',passive:'magnet',awake:'이온 폭풍',effect:'범위 확대 · 적 이동 속도 감소',base:110,color:'#94bfff'},
+{id:'nova',name:'EMP 펄스버스터',icon:'NV',desc:'주변의 모든 적에게 원형 피해',passive:'magnet',awake:'이온 폭풍',effect:'범위 확대 · 적 이동 속도 감소',base:110,color:'#94bfff'},
 {id:'drone',name:'궤도 드론',icon:'DR',desc:'주위를 회전하며 주변 적에게 광선 발사',passive:'armor',awake:'수호 편대',effect:'드론 6기 · 적 탄환 소거',base:130,color:'#c4f589'},
 {id:'flame',name:'화염방사기',icon:'FL',desc:'전방 부채꼴 범위에 지속 피해',passive:'regen',awake:'태양의 숨결',effect:'전방위 화염 · 범위 확대',base:100,color:'#ff8268'},
-{id:'lightning',name:'연쇄 번개',icon:'LT',desc:'가까운 적 사이를 튕기는 번개',passive:'crit',awake:'제우스',effect:'연쇄 대상 2배 · 피해 증가',base:130,color:'#d6acff'}
+{id:'lightning',name:'아크 라이플',icon:'LT',desc:'가까운 적 사이를 튕기는 번개',passive:'crit',awake:'제우스',effect:'연쇄 대상 2배 · 피해 증가',base:130,color:'#d6acff'}
 ];
 const passives=[
 {id:'crit',name:'정밀 조준',desc:'모든 무기 치명타 확률 +5%p · 치명타 피해 2배'},
